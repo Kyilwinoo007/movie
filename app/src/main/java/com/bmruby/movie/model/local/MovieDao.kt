@@ -21,6 +21,8 @@ interface MovieDao {
 
     @Query("DELETE FROM popular_movie")
     suspend fun deleteAllPopularMovie()
+    @Query("UPDATE popular_movie SET isFavourite = :isFavorite WHERE id =:id")
+    fun update(isFavorite: Boolean?, id: Int)
 
 
 }

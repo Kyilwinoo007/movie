@@ -81,4 +81,18 @@ class HomeViewModel(val repository: HomeRepository) : ViewModel() {
             }
         }
     }
+
+    fun setUpComingMovieFavorite(id: Int,isFavorite:Boolean) {
+        viewModelScope.launch {
+            repository.setUpComingMovieFavorite(id,isFavorite)
+
+        }
+    }
+
+    fun setPopularMovieFavorite(id: Int, favorite: Boolean) {
+        viewModelScope.launch {
+            repository.setPopularMovieFavorite(id,favorite)
+
+        }
+    }
 }

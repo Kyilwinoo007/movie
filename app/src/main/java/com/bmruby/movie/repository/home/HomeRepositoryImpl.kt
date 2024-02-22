@@ -1,8 +1,11 @@
 package com.bmruby.movie.repository.home
 
-import android.util.Log
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.withTransaction
-import com.bmruby.movie.model.data.ApiState
+import com.bmruby.movie.MyApplication
 import com.bmruby.movie.model.data.Resource
 import com.bmruby.movie.model.data.networkBoundResource
 import com.bmruby.movie.model.local.MovieDao
@@ -10,11 +13,10 @@ import com.bmruby.movie.model.local.MovieDb
 import com.bmruby.movie.model.local.PopularMovie
 import com.bmruby.movie.model.local.UpComingMovie
 import com.bmruby.movie.model.local.UpComingMovieDao
-import com.bmruby.movie.model.remote.ApiClient
 import com.bmruby.movie.model.remote.ApiInterface
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import org.jetbrains.annotations.ApiStatus
+import java.io.IOException
 
 
 class HomeRepositoryImpl(private val apiClient: ApiInterface,
@@ -29,6 +31,9 @@ class HomeRepositoryImpl(private val apiClient: ApiInterface,
 
         query = {
             movieDao.getAllPopularMovie()
+        },
+        shouldFetch = {
+                      isInternetAvailable()
         },
         fetch = {
             delay(1000)
@@ -50,6 +55,9 @@ class HomeRepositoryImpl(private val apiClient: ApiInterface,
         query = {
             upComingMovieDao.getAllUpComingMovie()
         },
+        shouldFetch = {
+            isInternetAvailable()
+        },
         fetch = {
             delay(1000)
             apiClient.getUpComingMovie().results
@@ -64,4 +72,33 @@ class HomeRepositoryImpl(private val apiClient: ApiInterface,
 
         }
     )
+    private fun isInternetAvailable(): Boolean {
+            var connMgr = MyApplication.appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            var networkInfo = connMgr.getActiveNetworkInfo();
+            return (networkInfo != null && networkInfo.isConnected());
+
+    }
+
+    override suspend fun setUpComingMovieFavorite(id: Int, isFavorite: Boolean):Resource<Unit> {
+            return try {
+                db.withTransaction {
+                    upComingMovieDao.update(isFavorite = isFavorite,id)
+                }
+                Resource.Success(Unit)
+            } catch (e: Exception) {
+                Resource.Error(e)
+            }
+
+    }
+
+    override suspend fun setPopularMovieFavorite(id: Int, favorite: Boolean): Resource<Unit> {
+        return try {
+            db.withTransaction {
+                movieDao.update(isFavorite = favorite,id)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e)
+        }
+    }
 }
