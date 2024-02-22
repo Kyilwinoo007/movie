@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,7 +49,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(){
+fun HomeScreen(popularDetail: (id:Int) -> Unit,upComingDetail: (id:Int) -> Unit) {
     val homeViewModel: HomeViewModel =  koinViewModel()
     Scaffold(modifier = Modifier
         .fillMaxSize()
@@ -59,14 +58,14 @@ fun HomeScreen(){
             .fillMaxWidth()
             .fillMaxHeight()
             .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally,){
-            PopularMovieWidget(homeViewModel)
-            UpComingMovie(homeViewModel)
+            PopularMovieWidget(homeViewModel,popularDetail)
+            UpComingMovieWidget(homeViewModel, upComingDetail)
         }
     }
 }
 
 @Composable
-fun UpComingMovie(homeViewModel: HomeViewModel) {
+fun UpComingMovieWidget(homeViewModel: HomeViewModel, navigateDetail: (id: Int) -> Unit) {
 
     Column(
         modifier = Modifier
@@ -95,17 +94,25 @@ fun UpComingMovie(homeViewModel: HomeViewModel) {
                 MovieItem(movie = movie, onFavorite = {
                     id,isFavorite ->
                     homeViewModel.setUpComingMovieFavorite(id,isFavorite)
-                })
+                }){
+                    navigateDetail.invoke(movie.id)
+                }
             }
         }
     }
 }
 
 @Composable
-fun  MovieItem(movie: UpComingMovie,onFavorite: (id: Int,isFavorite:Boolean) -> Unit){
+fun  MovieItem(movie: UpComingMovie,onFavorite: (id: Int,isFavorite:Boolean) -> Unit,detail: () -> Unit){
 
-    Column (modifier = Modifier.width(150.dp).height(250.dp).border(1.dp, color = Color.Gray,
-        RectangleShape)){
+    Column (modifier = Modifier
+        .width(150.dp)
+        .height(250.dp)
+        .border(
+            1.dp, color = Color.Gray,
+            RectangleShape
+        )
+        .clickable { detail.invoke() }){
 
                 val posterPath = movie.poster_path
                 val url = AppConstants.imageUlr + posterPath
@@ -116,9 +123,12 @@ fun  MovieItem(movie: UpComingMovie,onFavorite: (id: Int,isFavorite:Boolean) -> 
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
                 ){
                     NetworkImage(url = url, contentDescription = "image",
-                        modifier = Modifier.width(150.dp).height(200.dp))
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(200.dp))
                 }
-                Row( modifier = Modifier.fillMaxWidth()
+                Row( modifier = Modifier
+                    .fillMaxWidth()
                     .height(50.dp)
                     .padding(8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -130,9 +140,11 @@ fun  MovieItem(movie: UpComingMovie,onFavorite: (id: Int,isFavorite:Boolean) -> 
                         painterResource(id = R.drawable.favorite)
                         else
                         painterResource(id = R.drawable.un_favorite)   ,
-                        contentDescription = "like", modifier = Modifier.size(24.dp).clickable {
-                            onFavorite(movie.id,!isFavorite)
-                        })
+                        contentDescription = "like", modifier = Modifier
+                            .size(24.dp)
+                            .clickable {
+                                onFavorite(movie.id, !isFavorite)
+                            })
 
 
                 }
@@ -145,7 +157,7 @@ fun  MovieItem(movie: UpComingMovie,onFavorite: (id: Int,isFavorite:Boolean) -> 
 
 @SuppressLint("FlowOperatorInvokedInComposition")
 @Composable
-fun PopularMovieWidget(homeViewModel: HomeViewModel) {
+fun PopularMovieWidget(homeViewModel: HomeViewModel, navigateDetail: (id: Int) -> Unit) {
 
     Column(
         modifier = Modifier
@@ -171,8 +183,11 @@ fun PopularMovieWidget(homeViewModel: HomeViewModel) {
         ) {
             items(homeViewModel.popularMovieState.popularMovies.size) { index ->
                 var movie = homeViewModel.popularMovieState.popularMovies[index]
-                PopularMovieItem(movie = movie) { id, isFavorite ->
+                PopularMovieItem(movie = movie, onFavorite = {
+                        id, isFavorite ->
                     homeViewModel.setPopularMovieFavorite(id, isFavorite)
+                }) {
+                    navigateDetail.invoke(movie.id)
                 }
             }
         }
@@ -180,11 +195,19 @@ fun PopularMovieWidget(homeViewModel: HomeViewModel) {
 
 }
 @Composable
-fun  PopularMovieItem(movie: PopularMovie,onFavorite: (id:Int,isFavorite:Boolean) -> Unit){
+fun  PopularMovieItem(movie: PopularMovie,onFavorite: (id:Int,isFavorite:Boolean) -> Unit,detail:()-> Unit){
 
-    Column (modifier = Modifier.width(150.dp).height(250.dp).border(1.dp, color = Color.Gray,
-        RectangleShape)){
-
+    Column (modifier = Modifier
+        .width(150.dp)
+        .height(250.dp)
+        .border(
+            1.dp, color = Color.Gray,
+            RectangleShape
+        )
+        .clickable {
+            detail.invoke()
+        }
+    ){
         val posterPath = movie.poster_path
         val url = AppConstants.imageUlr + posterPath
 
@@ -194,9 +217,12 @@ fun  PopularMovieItem(movie: PopularMovie,onFavorite: (id:Int,isFavorite:Boolean
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ){
             NetworkImage(url = url, contentDescription = "image",
-                modifier = Modifier.width(150.dp).height(200.dp))
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(200.dp))
         }
-        Row( modifier = Modifier.fillMaxWidth()
+        Row( modifier = Modifier
+            .fillMaxWidth()
             .height(50.dp)
             .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -208,9 +234,11 @@ fun  PopularMovieItem(movie: PopularMovie,onFavorite: (id:Int,isFavorite:Boolean
                 painterResource(id = R.drawable.favorite)
             else
                 painterResource(id = R.drawable.un_favorite)   ,
-                contentDescription = "like", modifier = Modifier.size(24.dp).clickable {
-                    onFavorite(movie.id,!isFavorite)
-                })
+                contentDescription = "like", modifier = Modifier
+                    .size(24.dp)
+                    .clickable {
+                        onFavorite(movie.id, !isFavorite)
+                    })
 
 
         }
@@ -228,7 +256,7 @@ fun NetworkImage(url: String, contentDescription: String?,
     Image(
         painter = painter,
         contentDescription = contentDescription,
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
         modifier = modifier
     )
 }

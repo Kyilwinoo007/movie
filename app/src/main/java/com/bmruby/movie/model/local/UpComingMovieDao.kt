@@ -22,4 +22,6 @@ interface UpComingMovieDao {
 
     @Query("UPDATE upcoming_movie SET isFavourite = :isFavorite WHERE id =:id")
     fun update(isFavorite: Boolean?, id: Int)
+    @Query("SELECT * FROM upcoming_movie WHERE id =:id")
+    fun getMovieById(id: Int): Flow<UpComingMovie>
 }

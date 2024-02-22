@@ -2,8 +2,6 @@ package com.bmruby.movie.repository.home
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.room.withTransaction
 import com.bmruby.movie.MyApplication
 import com.bmruby.movie.model.data.Resource
@@ -16,7 +14,6 @@ import com.bmruby.movie.model.local.UpComingMovieDao
 import com.bmruby.movie.model.remote.ApiInterface
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import java.io.IOException
 
 
 class HomeRepositoryImpl(private val apiClient: ApiInterface,
@@ -101,4 +98,34 @@ class HomeRepositoryImpl(private val apiClient: ApiInterface,
             Resource.Error(e)
         }
     }
+
+    override fun getPopularMovieById(id: Int): Flow<Resource<PopularMovie>> = networkBoundResource(
+        query = {
+            movieDao.getPopularMovieById(id)
+        },
+        shouldFetch = {
+            isInternetAvailable()
+        },
+        fetch = {
+            delay(1000)
+            apiClient.getMovieById(id)
+        },
+        saveFetchResult = {
+        }
+    )
+
+    override fun getUpComingMovieById(id: Int): Flow<Resource<UpComingMovie>> = networkBoundResource(
+        query = {
+            upComingMovieDao.getMovieById(id)
+        },
+        shouldFetch = {
+            isInternetAvailable()
+        },
+        fetch = {
+            delay(1000)
+            apiClient.getMovieById(id)
+        },
+        saveFetchResult = {
+        }
+    )
 }

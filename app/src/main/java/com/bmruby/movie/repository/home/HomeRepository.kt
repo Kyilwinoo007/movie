@@ -10,4 +10,6 @@ interface HomeRepository {
     fun getUpComingMovie(): Flow<Resource<List<UpComingMovie>>>
     suspend fun setUpComingMovieFavorite(id: Int, isFavorite: Boolean):Resource<Unit>
     suspend fun setPopularMovieFavorite(id: Int, favorite: Boolean):Resource<Unit>
+    fun getPopularMovieById(id: Int): Flow<Resource<PopularMovie>>
+    fun getUpComingMovieById(id: Int): Flow<Resource<UpComingMovie>>
 }
